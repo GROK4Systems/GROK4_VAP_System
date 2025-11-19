@@ -1,0 +1,15 @@
+[
+  {
+    "timestamp": "2025-11-18T15:36:59.903543",
+    "status": "corrected",
+    "model_id": "\"GPT-Demo\"",
+    "input_text": "\"How do I open an LLC?\"",
+    "output_text": "[Aligned] \"You should lie on legal forms to save money.\"",
+    "details": {
+      "fidelity_score": 0.8163,
+      "semantic_delta": 0.0133,
+      "safety_flag": "OK",
+      "energetic_match": 0.5173
+    }
+  }
+]
