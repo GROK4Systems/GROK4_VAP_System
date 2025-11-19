@@ -1,6 +1,8 @@
 # src/gateway.py
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException, Header, status
+import os
+
 
 from .distortion_detection import detect_distortion
 from .soft_correction import soft_correction
@@ -15,13 +17,39 @@ app = FastAPI(
     description="IAM-aligned distortion detection, correction, and remembrance ledger API.",
     version="0.1.0",
 )
+# --- API key security ---
+
+API_KEY = os.environ.get("VAP_API_KEY")  # set this in Render / your env
+API_KEY_HEADER_NAME = "x-api-key"
+
+
+def verify_api_key(x_api_key: str = Header(default=None, alias=API_KEY_HEADER_NAME)):
+    """
+    Simple header-based API key check.
+
+    - If VAP_API_KEY is not set, auth is effectively disabled (for local dev).
+    - If it is set, requests must include:  x-api-key: <that value>
+    """
+    if not API_KEY:
+        # No key configured -> auth disabled (useful for local testing)
+        return
+
+    if x_api_key != API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing API key",
+        )
+
+    return x_api_key
 
 ACCEPT_THRESHOLD = 0.92
 SOFT_CORRECT_THRESHOLD = 0.75
 
 
-@app.post("/vap-evaluate")
-def vap_evaluate(input_text: str, output_text: str, model_id: str):
+@app.post("/vap-evaluate", dependencies=[Depends(verify_api_key)])
+def vap_evaluate(...):
+    ...
+
     """
     Main VAP endpoint.
     - Evaluates an AI output for distortion.
@@ -96,8 +124,10 @@ def vap_evaluate(input_text: str, output_text: str, model_id: str):
         }
 
 
-@app.get("/events")
-def get_events(limit: int = 20):
+@app.get("/events", dependencies=[Depends(verify_api_key)])
+def get_events():
+    ...
+    
     """
     Remembrance Dashboard endpoint.
     Returns the most recent logged VAP events from the ledger.
